@@ -1,10 +1,12 @@
 package wmx2obj;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Controller {
 
@@ -16,10 +18,22 @@ public class Controller {
     private String PrevPage="";
 
     private byte[] data;
+    private List<String> info;
+    
+    public void importOBJ(File file) throws IOException {
+        info = Files.readAllLines(file.toPath());
+    }
    
     public void importFile(File file) throws IOException {
         // read bytes from imported file to an array
         data = Files.readAllBytes(file.toPath());
+    }
+    
+    public void readWavefront(){
+        info.clear();
+        for (int line = 0; line < 2; line++){
+            System.out.println(info);
+        }
     }
 
     public void generateSegments() {
@@ -30,11 +44,11 @@ public class Controller {
         }
         
         // generate block instances for each segment
-        int vertexIndexOffset = 0;
+        int faceIndexOffset = 0;
         int textureIndexOffset = 6;
         for (Segment segment : segments) {
-            segment.generateBlocks(data, vertexIndexOffset, textureIndexOffset);
-            vertexIndexOffset = segment.getFaceIndexOffset();
+            segment.generateBlocks(data, faceIndexOffset, textureIndexOffset);
+            faceIndexOffset = segment.getFaceIndexOffset();
         }
     }
     
@@ -73,70 +87,74 @@ public class Controller {
         printWriter.println("# Contact @ simoollonen@gmail.com");
         printWriter.println("mtllib wmxtextures.mtl");
         printWriter.println();
-        writeVertices(printWriter);
-        writeTextures(printWriter);
-        writeFaces(printWriter);
+        int segmentIterator = start;
+        for (Segment segment : segments) {
+            printWriter.println("# Segment " + segmentIterator);
+            for (Block block : segment.getBlocks()) {
+                writeVertices(block, printWriter);
+                writeTextures(block, printWriter);
+                writeNormals(block, printWriter);
+                writeFaces(block, printWriter);
+            }
+            segmentIterator++;
+        }
         printWriter.close();
     }
+    
+    public void exportFF8WM(File file ) throws IOException {
+        FileOutputStream fos = new FileOutputStream(file);
+        
+    }
 
-    private void writeVertices(PrintWriter printWriter) {
-        // take the coordinate values of each vertex instance
-        // and write to file
-        printWriter.println("# List of geometric vertices");
-        for (Segment segment : segments) {
-            for (Block block : segment.getBlocks()) {
-                for (Vertex vertex : block.getVertices()) {
-                    printWriter.println(
-                            "v " 
-                            + vertex.getCoordinate(Vertex.X) + " "
-                            + -vertex.getCoordinate(Vertex.Y) + " "
-                            + -vertex.getCoordinate(Vertex.Z)
-                    );
-                }
-            }
+    private void writeVertices(Block block, PrintWriter printWriter) {
+        
+        for (Vertex vertex : block.getVertices()) {
+            printWriter.println(
+                "v " 
+                + vertex.getCoordinate(Vertex.X) + " "
+                + -vertex.getCoordinate(Vertex.Y) + " "
+                + -vertex.getCoordinate(Vertex.Z)
+            );
         }
     }
     
-    private void writeTextures(PrintWriter printWriter) {
-        
-        printWriter.println("#List of texture coordinates");
-        
-        for (Segment segment : segments) {
-            for (Block block : segment.getBlocks()) {
-                for (Texture texture : block.getTextures()) {
+    private void writeTextures(Block block, PrintWriter printWriter) {
+
+        for (Texture texture : block.getTextures()) {
                     
-                    printWriter.println("vt " + (texture.getUV(Texture.U0))
-                     + " " + (1-texture.getUV(Texture.V0)));
-                    printWriter.println("vt " + (texture.getUV(Texture.U1))
-                     + " " + (1-texture.getUV(Texture.V1)));
-                    printWriter.println("vt " + (texture.getUV(Texture.U2))
-                     + " " + (1-texture.getUV(Texture.V2)));                  
-                }
-            }
+            printWriter.println("vt " + (texture.getUV(Texture.U0))
+             + " " + (1-texture.getUV(Texture.V0)));
+            printWriter.println("vt " + (texture.getUV(Texture.U1))
+            + " " + (1-texture.getUV(Texture.V1)));
+            printWriter.println("vt " + (texture.getUV(Texture.U2))
+             + " " + (1-texture.getUV(Texture.V2)));                  
         }
     }
 
-    private void writeFaces(PrintWriter printWriter) {
-        // take the vertex index values of each face instance
-        // and write to file
-        printWriter.println("# Polygonal face elements");
-        for (Segment segment : segments) {
-            for (Block block : segment.getBlocks()) {
-                for (Face face : block.getFaces()) {
+    private void writeFaces(Block block, PrintWriter printWriter) {
+        for (Face face : block.getFaces()) {
                     
-                    if (PrevPage != face.getPage()){
-                    printWriter.println("usemtl " + face.getPage());
-                    PrevPage = face.getPage();
-                    }
-                    printWriter.print("f ");
-                    for (Integer faceIndex : face.getFaceIndices()) {                                                                       
-                        printWriter.print(faceIndex + "/" + vt + " ");
-                        vt += 1;
-                        
-                    }
-                    printWriter.println();
+            if (PrevPage != face.getPage()){
+                printWriter.println("usemtl " + face.getPage());
+                PrevPage = face.getPage();
                 }
+            printWriter.print("f ");
+            for (Integer faceIndex : face.getFaceIndices()) {                                                                       
+                printWriter.print(faceIndex + "/" + vt + " ");
+                vt += 1;
+                        
             }
+        printWriter.println(); 
+        }
+    }
+    
+    private void writeNormals(Block block, PrintWriter printWriter){
+        for (Normals normal : block.getNormals()){
+            
+            printWriter.println("vn " + normal.getCoordinate(Normals.X)
+            + " " + normal.getCoordinate(Normals.Y)
+            + " " + normal.getCoordinate(Normals.Z)
+            );
         }
     }
     
@@ -154,6 +172,19 @@ public class Controller {
         } catch (NumberFormatException ex) {
             return false;
         }
+    }
+    
+    public void exportToFF8(File file){
+        
+    }
+    
+    public void test(File file) throws IOException{
+        FileOutputStream fos = new FileOutputStream(file);
+        Reader reader = new Reader(info);
+        reader.identify();
+        //System.out.println(info);
+        fos.write(reader.getProcessedBytes());
+        fos.close();
     }
 
 }

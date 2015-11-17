@@ -43,7 +43,7 @@ public class Writer {
                 }
                 /*
                 For triangles last 4 bytes use format:
-                (First byte = 4-bit texturepage, 4-bit clutid)
+                (First byte = 00 (4-bit texturepage, 4-bit clutid))
                 (Second byte = 10 , solid type)
                 (Third byte = 00, if not water, rail or road texture)
                 (Fourth byte = FF, for walkability and landability)

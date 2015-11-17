@@ -12,6 +12,7 @@ public class Material {
     private ArrayList<Double> textureCoordinates;
     private ArrayList<Integer> textureIndices;
 
+    private ArrayList<Integer> cluts;
     
     public Material(ArrayList<String> materials, ArrayList<Double>
                     textureCord, ArrayList<Integer> textureIndices ){
@@ -20,11 +21,15 @@ public class Material {
         this.textureIndices = textureIndices;
         
     }
-    public void texturePage(){
+    public void clutID(){
         
         
         for (int i = 0; i < textureIndices.size(); i++){
-            
+            if(i%3==0){
+                if(textureIndices.get(i) >= 0){
+                    //blaah
+                }
+            }
         }
         
     }

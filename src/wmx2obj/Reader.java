@@ -28,6 +28,8 @@ public class Reader {
     private List<String> info;
     private List<String> line;
     
+    
+    
     private final ArrayList<Double> coordinatesV = new ArrayList();
     private final ArrayList<BigDecimal> coordinatesVclone = new ArrayList();
     private final ArrayList<Short> coordinatesVBytes = new ArrayList();
@@ -60,7 +62,7 @@ public class Reader {
         textureIndices.add(indice);
     }
     
-    public void identify(){
+    public void identify(){ //Find lines starting with defined text
         for (int iterator = 0; iterator < info.size();iterator++){
             if (info.get(iterator).startsWith(objVertex)){
                 //System.out.println("vertex");
@@ -79,7 +81,7 @@ public class Reader {
                 readFaces(info.get(iterator));
                 //System.out.println(coordinatesF);
             }else if(info.get(iterator).startsWith(objMaterial)){
-                //readMaterial(info.get(iterator));
+                readMaterial(info.get(iterator));
             }else{
                 //System.out.println("something else");
             }
@@ -87,6 +89,8 @@ public class Reader {
         setVertexRange(coordinatesV);
         setTextureScale(coordinatesVt);
         listToBytes(coordinatesVclone);
+        Material m = new Material(materialNames, coordinatesVt,
+                                  textureIndices);
         Writer w = new Writer(coordinatesVBytes,textureCoordinatesAsBytes,coordinatesVn,
                                 coordinatesF,textureIndices);
         w.orderArrays();
@@ -169,6 +173,7 @@ public class Reader {
             }*/
     }
     
+    // Scales vertices from double typed arraylist to bigdecimal arraylist
     public void setVertexRange(ArrayList<Double> coordinates){
         BigDecimal absmin = new BigDecimal(Collections.min(coordinates));
         absmin = absmin.abs();
@@ -198,7 +203,7 @@ public class Reader {
             textureCoordinatesAsBytes.add(indice.byteValue());
         }
     }
-    
+    //BigDecimal arraylist to short typed arraylist
     public void listToBytes(ArrayList<BigDecimal> coordinates){
         for (BigDecimal number : coordinates){
             coordinatesVBytes.add(number.shortValue());

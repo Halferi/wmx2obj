@@ -1,9 +1,6 @@
 package wmx2obj;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Writer {
     
@@ -26,6 +23,7 @@ public class Writer {
         texIndices = textureIndices;
     }
     
+    //orders each byte to FF8 readable format, far from ready
     public void orderArrays(){
         orderedBytes.add((byte) (faces.size()/3));
         orderedBytes.add((byte) (vertices.size()/3));
@@ -112,7 +110,8 @@ public class Writer {
         
     }
     
-    public void shortToBytes(int value){    //Converts bytes to Little-Endian format
+    //Converts bytes to Little-Endian format
+    public void shortToBytes(int value){ 
         ret[0] = (byte) (value & 0xff);
         ret[1] = (byte) (value >> 8 & 0xff);
 
@@ -122,7 +121,8 @@ public class Writer {
         return orderedBytes;
     }
     
-    public short inverseValue (ArrayList<Short> list, int offset){  //inverseValue of Short from list
+    //inverseValue of Short from list
+    public short inverseValue (ArrayList<Short> list, int offset){  
         short x = list.get(offset);
         short invertedx = (short) (-x);
         return invertedx;

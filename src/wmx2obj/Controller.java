@@ -178,6 +178,7 @@ public class Controller {
         
     }
     
+    // Handler for importer
     public void test(File file) throws IOException{
         FileOutputStream fos = new FileOutputStream(file);
         Reader reader = new Reader(info);
